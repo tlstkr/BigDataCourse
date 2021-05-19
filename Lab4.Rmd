@@ -1,0 +1,64 @@
+---
+title: "Лабораторна робота 4"
+author: "Anastasiia Tolstokorova"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Зчитування даних з реляційних баз даних
+
+### 1
+
+#### Назва статті (Title), тип виступу (EventType). Необхідно вибрати тільки статті с типом виступу Spotlight. Сортування по назві статті
+
+
+
+```{r, warning = FALSE, message = FALSE}
+library(DBI)
+library(RSQLite)
+conn <- dbConnect(RSQLite::SQLite(), 'database.sqlite')
+res1 <- dbSendQuery(conn, "SELECT Title, EventType FROM Papers WHERE EventType='Spotlight' ORDER BY Title")
+data1 <- dbFetch(res1, n=10)
+dbClearResult(res1)
+data1
+```
+
+
+### 2
+#### Ім’я автора (Name), Назва статті (Title). Необхідно вивести всі назви статей для автора «Josh Tenenbaum». Сортування по назві статті
+
+```{r, warning = FALSE, message = FALSE}
+
+res2 <- dbSendQuery(conn, "SELECT Authors.Name, Papers.Title FROM Papers JOIN PaperAuthors ON Papers.Id=PaperAuthors.PaperId JOIN Authors ON Authors.Id=PaperAuthors.AuthorId WHERE Authors.Name='Josh Tenenbaum' ORDER BY Papers.Title")
+data2 <- dbFetch(res2, n=10)
+dbClearResult(res2)
+data2
+
+```
+
+
+### 3
+#### Вибрати всі назви статей (Title), в яких є слово «statistical». Сортування по назві статті
+
+
+```{r, warning = FALSE, message = FALSE}
+res3 <- dbSendQuery(conn, "SELECT Title FROM Papers WHERE Title LIKE '%statistical%' ORDER BY Title")
+data3 <- dbFetch(res3, n=10)
+dbClearResult(res3)
+data3
+```
+
+
+### 4
+#### Ім’я автору (Name), кількість статей по кожному автору (NumPapers). Сортування по кількості статей від більшої кількості до меньшої.
+
+
+```{r, warning = FALSE, message = FALSE}
+res4 <- dbSendQuery(conn, "SELECT Authors.Name, COUNT(Authors.Id) as NumPapers FROM Authors JOIN PaperAuthors ON Authors.Id=PaperAuthors.AuthorId JOIN Papers ON Papers.Id=PaperAuthors.PaperId GROUP BY Authors.Id ORDER BY COUNT(Authors.Id) DESC")
+data4 <- dbFetch(res4, n=20)
+dbClearResult(res4)
+data4
+```
