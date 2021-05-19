@@ -1,0 +1,116 @@
+---
+title: "Лабораторна робота 2"
+author: "Anastasiia Tolstokorova"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Формат HDF5
+
+В цій лабораторній роботі побудуємо за даними детектора гравітаційних хвиль
+LIGO графік злиття двох нейтронних зір. Подія GW170817
+https://uk.wikipedia.org/wiki/GW170817. Лабораторну роботу створено на основі
+https://losc.ligo.org/tutorial00/
+
+### 1
+
+#### Завантажте файл з даними за посиланням https://dcc.ligo.org/public/0146/P1700337/001/H-H1_LOSC_C00_4_V1-1187006834-4096.hdf5  
+
+
+```{r, warning = FALSE, message = FALSE}
+download.file('https://dcc.ligo.org/public/0146/P1700337/001/H-H1_LOSC_C00_4_V1-1187006834-4096.hdf5', destfile='lab2_1.hdf5', mode='wb')
+```
+
+
+### 2
+#### Встановить в R пакет для роботи з HDF5 файлами.
+
+```{r, warning = FALSE, message = FALSE}
+# install.packages('BiocManager')
+BiocManager::install('rhdf5', force=TRUE)
+library(rhdf5)
+```
+
+
+### 3
+#### Виведіть зміст файлу командою h5ls().
+
+
+```{r, warning = FALSE, message = FALSE}
+```
+
+
+
+
+### 4
+#### Зчитайте результати вимірів. Для цього зчитайте name Strain з групи strain в змінну strain. Після зчитування не забувайте закривати файл командою H5Close()
+
+```{r, warning = FALSE, message = FALSE}
+h5ls('lab2_1.hdf5')
+file <- H5Fopen("lab2_1.hdf5")
+strain <- file$"/strain/Strain"
+H5close()
+head(strain)
+```
+
+
+
+### 5
+#### Також з «strain/Strain» зчитайте атрибут (функція h5readAttributes) Xspacing в змінну st та виведіть її. Це інтервал часу між вимірами.
+
+```{r, warning = FALSE, message = FALSE}
+st <- h5readAttributes('lab2_1.hdf5', '/strain/Strain')$Xspacing
+st
+```
+
+
+
+### 6
+#### Знайдіть час початку події та її тривалість. Для цього з групи meta зчитайте в змінну gpsStart name GPSstart та в змінну duration name Duration.
+
+```{r, warning = FALSE, message = FALSE}
+gpsStart <- h5read('lab2_1.hdf5', '/meta/GPSstart')
+duration <- h5read('lab2_1.hdf5', '/meta/Duration')
+gpsStart
+duration
+```
+
+
+### 7
+
+#### Знайдіть час закінчення події та збережіть його в змінну gpsEnd.
+```{r, warning = FALSE, message = FALSE}
+gpsEnd <- gpsStart + duration
+gpsEnd
+
+```
+
+
+### 8
+#### Створіть вектор з часу вимірів і збережіть у змінну myTime. Початок послідовності – gpsStart, кінець – gpsEnd, крок – st.
+
+```{r, warning = FALSE, message = FALSE}
+myTime <- seq(gpsStart, gpsEnd, st)
+head(myTime, n=50)
+```
+
+
+
+### 9
+#### Побудуємо графік тільки для першого мільйону вимірів. Для цього створіть змінну numSamples, яка дорівнює 1000000.
+
+```{r, warning = FALSE, message = FALSE}
+numSamples <- 1000000
+```
+
+
+
+### 10
+#### Побудуйте графік за допомогою функції plot(myTime[0:numSamples], strain[0:numSamples], type = "l", xlab = "GPS Time (s)", ylab = "H1 Strain")
+
+```{r, warning = FALSE, message = FALSE}
+plot(myTime[0:numSamples], strain[0:numSamples], type='l', xlab='GPS Time(s)', ylab='H1 Strain')
+```
